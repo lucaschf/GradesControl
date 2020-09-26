@@ -6,17 +6,16 @@ import tsi.too.grade_control.controller.MenuController;
 
 public class GradesControl {
 	private ArrayList<Student> students;
-	
-	private ArrayList<Student>createClass(){
-		return new ArrayList<>();
-	}
+	private MenuController controller;
 	
 	public GradesControl() {
 		students = createClass();
 		controller = MenuController.getInstance(students);
 	}
 	
-	private MenuController controller;
+	private ArrayList<Student>createClass(){
+		return new ArrayList<>();
+	}
 	
 	public void execute() {
 		controller.showMenu();

@@ -2,18 +2,20 @@ package tsi.too.grade_control;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class Student {
-	private final int SUBJECTS = 5;
-	private static int students = 0;
+public class Student implements Cloneable{
+	private final int MAX_SUBSCRIPTION_ALLWOED = 5;
+	private static int studentsCount = 0;
 
 	private String registration;
 	private String course;
 	private String name;
-	private Subject[] subjects = new Subject[SUBJECTS];
+	private Discipline[] enrolledDisciplines = new Discipline[MAX_SUBSCRIPTION_ALLWOED];
 
-	private int registeredSubjects = 0;
+	private int enrolledDisciplinesCount = 0;
 
 	public Student(String registration, String name, String course) {
 		super();
@@ -42,47 +44,84 @@ public class Student {
 		this.name = name;
 	}
 
-	public static int getStudents() {
-		return students;
+	public static int getStudentsCount() {
+		return studentsCount;
 	}
-
-	public boolean addSubject(Subject subject) {
-		if(registeredSubjects >= SUBJECTS - 1)
+	
+	public static void increaseStudentsCount() {
+		studentsCount++;
+	}
+	
+	public static void decreaseStudentsCount() {
+		if(studentsCount > 0)
+			studentsCount--;
+	}
+	
+	public boolean addSubject(Discipline subject) {
+		if(enrolledDisciplinesCount >= MAX_SUBSCRIPTION_ALLWOED - 1)
 			return false;
 
-		subjects[registeredSubjects] = subject;
-		registeredSubjects++;
+		enrolledDisciplines[enrolledDisciplinesCount] = subject;
+		enrolledDisciplinesCount++;
 		
 		return true;
 	}
 
 	public boolean isAproved() {
-		for(int i = 0; i < registeredSubjects; i++){
-			if(!subjects[i].isAproved())
+		for(int i = 0; i < enrolledDisciplinesCount; i++){
+			if(!enrolledDisciplines[i].isAproved())
 				return false;
 		}
 
 		return true;
 	}
 	
-	public boolean canRegisterSubject() {
-		return registeredSubjects < SUBJECTS -1;
+	public boolean canEnrollInAnotherDiscipline() {
+		return enrolledDisciplinesCount < MAX_SUBSCRIPTION_ALLWOED;
+	}
+	
+	public boolean isEnrolled() {
+		return enrolledDisciplinesCount > 0;
 	}
 
 	public boolean isEnrolled(String subjectName) {
-		if(registeredSubjects == 0)
+		if(enrolledDisciplinesCount == 0)
 			return false;
 		
-		for(int i = 0; i < registeredSubjects; i++) {
-			if(subjects[i].getName().equalsIgnoreCase(subjectName))
+		for(int i = 0; i < enrolledDisciplinesCount; i++) {
+			if(enrolledDisciplines[i].getName().equalsIgnoreCase(subjectName))
 				return true;
 		}
 		
 		return false;
 	}
 	
-	public List<Subject> getSubjects(){
-		return new ArrayList<Subject>();
+	public List<Discipline> getEnrolledDisciplines(){
+		var l = new ArrayList<Discipline>(Arrays.asList(enrolledDisciplines));
+		l.removeAll(Collections.singleton(null));
+		
+		return l;
+	}
+
+	public List<Discipline> getDisciplines(String name){
+		return getEnrolledDisciplines()
+				.stream().filter(s-> s.getName().equalsIgnoreCase(name))
+				.collect(Collectors.toList());	
+	}
+	
+	public boolean updateGrade(Discipline discipline) {
+		for(Discipline d : enrolledDisciplines) {
+			if(d == null)
+				return false;
+			
+			if(discipline.getName().equalsIgnoreCase(d.getName()))
+			{
+				d.setGrade(discipline.getGrade());
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	@Override
@@ -90,8 +129,8 @@ public class Student {
 		return "Student {registration= " + registration +
 				", course= " + course + 
 				", name= " + name + 
-				", subjects= " + Arrays.toString(subjects) + 
-				", registeredSubjects= " + registeredSubjects 
+				", subjects= " + getEnrolledDisciplines() + 
+				", registeredSubjects= " + enrolledDisciplinesCount 
 				+ "}";
 	}
 }

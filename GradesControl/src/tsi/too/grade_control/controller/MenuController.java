@@ -6,7 +6,7 @@ import static tsi.too.grade_control.Constants.GRADES_CONTROLLER;
 import static tsi.too.grade_control.Constants.REGISTER_STUDENT;
 import static tsi.too.grade_control.Constants.REPORT;
 import static tsi.too.grade_control.Constants.SEARCH_STUDENT;
-import static tsi.too.grade_control.Constants.SEARCH_SUBJECT;
+import static tsi.too.grade_control.Constants.SEARCH_DISCIPLINE;
 import static tsi.too.grade_control.Constants.UPDATE_STUDENT_DATA;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class MenuController {
 	private final List<String> OPTIONS = Arrays.asList(
 			REGISTER_STUDENT,
 			SEARCH_STUDENT,
-			SEARCH_SUBJECT,
+			SEARCH_DISCIPLINE,
 			UPDATE_STUDENT_DATA,
 			DELETE_STUDENT,
 			REPORT
@@ -71,13 +71,16 @@ public class MenuController {
 				studentController.searchStudent(students);
 				break;
 			case UPDATE_STUDENT_DATA:
+				studentController.updateStudentData(students);
 				break;
-			case SEARCH_SUBJECT:
+			case SEARCH_DISCIPLINE:
+				studentController.searchDiscipline(students);
 				break;
 			case DELETE_STUDENT:
 				studentController.removeStudent(students);
 				break;
 			case REPORT:
+				studentController.report(students);
 				break;
 			default:
 				break;

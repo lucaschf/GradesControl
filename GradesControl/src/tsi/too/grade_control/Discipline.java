@@ -1,14 +1,14 @@
 package tsi.too.grade_control;
 
-public class Subject {
+public class Discipline {
 	private final double MIN_FOR_APPROVAL = 6;
-	private static final double MAX_GRADE = 10;
-	private static final double MIN_GRADE = 0;
+	public static final double MAX_GRADE = 10;
+	public static final double MIN_GRADE = 0;
 	
 	private String name;
 	private double grade;
 	
-	public Subject(String name, double grade) {
+	public Discipline(String name, double grade) {
 		super();
 		this.name = name;
 		this.grade = grade;
@@ -20,6 +20,10 @@ public class Subject {
 	
 	public double getGrade() {
 		return grade;
+	}
+	
+	public void setGrade(double grade) {
+		this.grade = grade;
 	}
 	
 	public boolean isAproved() {
