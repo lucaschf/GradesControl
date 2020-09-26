@@ -1,7 +1,13 @@
 package tsi.too.grade_control.controller;
 
 import static tsi.too.grade_control.Constants.*;
+import static tsi.too.message_dialog.InputDialog.createEmptyStringValidator;
+import static tsi.too.message_dialog.InputDialog.showStringInputDialog;
 import static tsi.too.message_dialog.InputDialog.InputValidator.DEFAULT_SUCCESS_MESSAGE;
+import static tsi.too.message_dialog.MessageDialog.showAlertDialog;
+import static tsi.too.message_dialog.MessageDialog.showConfirmationDialog;
+import static tsi.too.message_dialog.MessageDialog.showInformationDialog;
+import static tsi.too.message_dialog.MessageDialog.showTextMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +17,6 @@ import java.util.stream.Collectors;
 import tsi.too.grade_control.Student;
 import tsi.too.grade_control.Discipline;
 import tsi.too.message_dialog.InputDialog;
-import tsi.too.message_dialog.MessageDialog;
 import tsi.too.message_dialog.InputDialog.InputValidator;
 
 public class StudentController {
@@ -46,7 +51,7 @@ public class StudentController {
 		if(s != null) {			
 			students.add(s);
 			Student.increaseStudentsCount();
-			MessageDialog.showInformationDialog(STUDENT_REGISTRATION, STUDENT_SUCCESSFULY_REGISTERED);
+			showInformationDialog(STUDENT_REGISTRATION, STUDENT_SUCCESSFULY_REGISTERED);
 		}
 	}
 
@@ -85,7 +90,7 @@ public class StudentController {
 	 * @return the read data or null if reading is cancelled or the student data is already registered.
 	 */
 	private Student readStudentData(final ArrayList<Student> students) {
-		String registration = InputDialog.showStringInputDialog(
+		String registration = showStringInputDialog(
 				STUDENT_REGISTRATION, 
 				REGISTRATION_NUMBER, 
 				input -> isValidRegistration(input, students)
@@ -93,26 +98,27 @@ public class StudentController {
 		if(registration == null)
 			return null;
 
-		String name = InputDialog.showStringInputDialog(
+		String name = showStringInputDialog(
 				STUDENT_REGISTRATION, 
 				NAME, 
 				input -> {
-					String message = InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK).getErrorMessage(input);
+					var message = createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+							.getErrorMessage(input);
 
 					if(message == DEFAULT_SUCCESS_MESSAGE)
 						return students.stream().filter(s -> s.getName().equals(input))
-								.count() > 0 ? NAME_ALREADY_REGISTERED :message;
+								.count() > 0 ? NAME_ALREADY_REGISTERED : message;
 
 					return message;
 				});
 		if(name == null)		
 			return null;
 
-		String course = InputDialog.showStringInputDialog(
+		String course = showStringInputDialog(
 				STUDENT_REGISTRATION, 
 				COURSE,
-				InputDialog.createEmptyStringValidator(COURSE_CANNOT_BE_BLANK)
-				);
+				createEmptyStringValidator(COURSE_CANNOT_BE_BLANK)
+		);
 		if(course == null)
 			return null;
 
@@ -121,7 +127,7 @@ public class StudentController {
 		do {
 			enroll(s);
 		}while(!s.isEnrolled() && 
-				!MessageDialog.showConfirmationDialog(
+				!showConfirmationDialog(
 						STUDENT_REGISTRATION, 
 						STUDENT_MUST_BE_ENROLLED_IN_A_DISCIPLINE_AT_LEAST_CANCEL_REGISTRATION
 				)
@@ -138,19 +144,23 @@ public class StudentController {
 			
 			s.addSubject(subject);
 			
-			if(s.canEnrollInAnotherDiscipline() && !MessageDialog.showConfirmationDialog(STUDENT_REGISTRATION, ENROLL_IN_ANOTHER_DISCIPLINE))
+			if(s.canEnrollInAnotherDiscipline() && 
+					!showConfirmationDialog(STUDENT_REGISTRATION, ENROLL_IN_ANOTHER_DISCIPLINE))
 				break;
 		}
 	}
 	
 	private Discipline readDisciplineData(Student s) {
-		String name = InputDialog.showStringInputDialog(
+		String name = showStringInputDialog(
 				DISCIPLINE_ENROLLMENT, 
 				NAME, 
 				input -> {
-					var message = InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK).getErrorMessage(input);
+					var message = createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+							.getErrorMessage(input);
+					
 					if(message == DEFAULT_SUCCESS_MESSAGE) {
-						return s.isEnrolled(input) ? STUDENT_ALREADY_ENROLLED_IN_THIS_DISCIPLINE : DEFAULT_SUCCESS_MESSAGE;
+						return s.isEnrolled(input) 
+								? STUDENT_ALREADY_ENROLLED_IN_THIS_DISCIPLINE : DEFAULT_SUCCESS_MESSAGE;
 					}
 					
 					return message;
@@ -171,7 +181,9 @@ public class StudentController {
 	}
 
 	private Student searchStudent(final List<Student> students, String name) {
-		var found = students.stream().filter(s-> s.getName().equalsIgnoreCase(name)).collect(Collectors.toList());
+		var found = students.stream()
+				.filter(s-> s.getName().equalsIgnoreCase(name))
+				.collect(Collectors.toList());
 		
 		if(!found.isEmpty())
 			return found.get(0);
@@ -180,19 +192,20 @@ public class StudentController {
 	}
 	
 	public void searchStudent(final List<Student> students) {
-		var name = InputDialog.showStringInputDialog(
+		var name = showStringInputDialog(
 				SEARCH_STUDENT, 
 				NAME, 
-				InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+				createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
 		);
 		
 		if(name != null)
 		{
 			var student = searchStudent(students, name);
+			
 			if(student == null)
-				MessageDialog.showAlertDialog(SEARCH_STUDENT, STUDENT_NOT_FOUND);
+				showAlertDialog(SEARCH_STUDENT, STUDENT_NOT_FOUND);
 			else
-				MessageDialog.showTextMessage(STUDENT_DATA, createStudentMessage(student));
+				showTextMessage(STUDENT_DATA, createStudentMessage(student));
 		}
 	}
 
@@ -216,10 +229,10 @@ public class StudentController {
 	}
 	
 	public void removeStudent(final ArrayList<Student> students) {
-		var name = InputDialog.showStringInputDialog(
+		var name = showStringInputDialog(
 				SEARCH_STUDENT, 
 				NAME, 
-				InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+				createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
 		);
 		
 		if(name == null) 
@@ -228,31 +241,32 @@ public class StudentController {
 		var student = searchStudent(students, name);
 		
 		if(student == null)
-			MessageDialog.showAlertDialog(SEARCH_STUDENT, STUDENT_NOT_FOUND);
+			showAlertDialog(SEARCH_STUDENT, STUDENT_NOT_FOUND);
 		else {
-			var message = createStudentMessage(student) +String.format("\n%s", ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_STUDENT);
-			if(MessageDialog.showConfirmationDialog(DELETE_STUDENT, message))
-			{
+			var message = createStudentMessage(student) + 
+					String.format("\n%s", ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_STUDENT);
+			
+			if(showConfirmationDialog(DELETE_STUDENT, message)){
 				students.remove(student);
 				Student.decreaseStudentsCount();
-				MessageDialog.showInformationDialog(DELETE_STUDENT, STUDENT_SUCCESSFULY_DELETED);
+				showInformationDialog(DELETE_STUDENT, STUDENT_SUCCESSFULY_DELETED);
 			}
 		}
 	}
 
 	public void searchDiscipline(final List<Student> students) {
-		var studentNameOrRegistration = InputDialog.showStringInputDialog(
+		var studentNameOrRegistration = showStringInputDialog(
 				SEARCH_DISCIPLINE, 
 				STUDENT_NAME_OR_REGISTRATION, 
-				InputDialog.createEmptyStringValidator(THIS_FIELD_CANNOT_BE_EMPTY)
+				createEmptyStringValidator(THIS_FIELD_CANNOT_BE_EMPTY)
 		);
 		if(studentNameOrRegistration == null)
 			return;
 		
-		var subject = InputDialog.showStringInputDialog(
+		var subject = showStringInputDialog(
 				SEARCH_DISCIPLINE, 
 				DISCIPLINE_NAME, 
-				InputDialog.createEmptyStringValidator(THIS_FIELD_CANNOT_BE_EMPTY)
+				createEmptyStringValidator(THIS_FIELD_CANNOT_BE_EMPTY)
 		);
 		if(subject == null)
 			return;
@@ -264,15 +278,15 @@ public class StudentController {
 		
 		if(student == null)
 		{
-			MessageDialog.showAlertDialog(SEARCH_DISCIPLINE, STUDENT_NOT_FOUND);
+			showAlertDialog(SEARCH_DISCIPLINE, STUDENT_NOT_FOUND);
 			
 			return;
 		}
 		
-		var enrolledSubjects = searchDiscipline(student, subject);
-		if(enrolledSubjects.length == 0)
+		var enrolledDisciplines = searchDiscipline(student, subject);
+		if(enrolledDisciplines.length == 0)
 		{
-			MessageDialog.showAlertDialog(
+			showAlertDialog(
 					SEARCH_STUDENT, 
 					String.format(THE_STUDENT_IS_NOT_ENROLLED_ON_THIS_SUBJECT, subject)
 			);
@@ -282,16 +296,18 @@ public class StudentController {
 		
 		var message = student.getName();
 		
-		for(Object obj : enrolledSubjects) {
-			var s = ((Discipline) obj);
-			message+= String.format("\n\t%s: %1.2f", s.getName(), s.getGrade());
+		for(Object obj : enrolledDisciplines) {
+			var discipline = ((Discipline) obj);
+			message+= String.format("\n\t%s: %1.2f", discipline.getName(), discipline.getGrade());
 		}
 		
-		MessageDialog.showInformationDialog(SEARCH_STUDENT, message);
+		showInformationDialog(SEARCH_STUDENT, message);
 	}
 
 	private Student searchDiscipline(final List<Student> students, String registration) {
-		var found = students.stream().filter(s-> s.getRegistration().equalsIgnoreCase(registration)).collect(Collectors.toList());
+		var found = students.stream()
+				.filter(s-> s.getRegistration().equalsIgnoreCase(registration))
+				.collect(Collectors.toList());
 		
 		if(!found.isEmpty())
 			return found.get(0);
@@ -303,20 +319,18 @@ public class StudentController {
 		return student.getDisciplines(subject).toArray();
 	}
 
-	public void report(final List<Student> students)
-	{
+	public void report(final List<Student> students) {
 		var message = new StringBuilder();
 		var studentsCount = Student.getStudentsCount();
 		var reprovedCount = 0;
 		var approvedCount = 0;
 		
 		if(studentsCount == 0) {
-			MessageDialog.showInformationDialog(REPORT, NO_DATA_FOUND);
+			showInformationDialog(REPORT, NO_DATA_FOUND);
 			return;
 		}
 		
-		for(Student s : students)
-		{
+		for(Student s : students){
 			message.append(generateStudentApprovalStatus(s))
 				.append("\n");
 			
@@ -333,11 +347,11 @@ public class StudentController {
 			.append(String.format("\n%s = %d", NUMBER_OF_STUDENTS, studentsCount))
 			.append(String.format("\n%s = %d", NUMBER_OF_APPROVED, approvedCount ))
 			.append(String.format("\n%s = %d", NUMBER_OF_REPROVEDS, reprovedCount ))
-			.append(String.format("\n%s = %1.2f", PERCENTAGE_OF_APPROVED, percentageOfApproved ))
-			.append(String.format("\n%s = %1.2f", PERCENTAGE_OF_REPROVED, percentageOfReproved))
+			.append(String.format("\n%s = %1.1f%%", PERCENTAGE_OF_APPROVED, percentageOfApproved ))
+			.append(String.format("\n%s = %1.1f%%", PERCENTAGE_OF_REPROVED, percentageOfReproved))
 		;
 		
-		MessageDialog.showTextMessage(REPORT, message.toString());
+		showTextMessage(REPORT, message.toString());
 	}
 
 	private String generateStudentApprovalStatus(Student student) {
@@ -354,24 +368,19 @@ public class StudentController {
 
 	private String generateSeparator(String header) {
 		var charCount = 20;
-		
-		var message = "\n";
-		
-		for(int i = 0; i < charCount; i++) {
-			message+="-";
-		}
-		
-		message += " " + header + " ";
+		var separatorChars="";
 		
 		for(int i = 0; i < charCount; i++) {
-			message+="-";
+			separatorChars+="-";
 		}
+		
+		var message = "\n" + separatorChars +" " + header + " " + separatorChars;
 		
 		return message;
 	}
 	
-	private double calculatePercentage(int part, int total) {
-		return (part / total) * 100;
+	private double calculatePercentage(double value, double from) {
+		return value / from * 100;
 	}
 
 	private String getRegistrationSequencialNumber(final String registration) {
@@ -383,10 +392,10 @@ public class StudentController {
 	}
 
 	public void updateStudentData(final ArrayList<Student> students) {
-		var name = InputDialog.showStringInputDialog(
+		var name = showStringInputDialog(
 				UPDATE_STUDENT_DATA, 
 				STUDENT_NAME, 
-				InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+				createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
 			);
 		
 		if(name == null)
@@ -396,7 +405,7 @@ public class StudentController {
 		
 		if(student == null)
 		{
-			MessageDialog.showAlertDialog(UPDATE_STUDENT_DATA, STUDENT_NOT_FOUND);
+			showAlertDialog(UPDATE_STUDENT_DATA, STUDENT_NOT_FOUND);
 			return;
 		}
 		
@@ -404,10 +413,10 @@ public class StudentController {
 	}
 
 	private void performReadAndUpdate(ArrayList<Student> students, Student student) {
-		var name = InputDialog.showStringInputDialog(
+		var name = showStringInputDialog(
 				UPDATE_STUDENT_DATA, 
 				NAME, 
-				InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+				createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
 			);
 		if(name == null)
 			return;
@@ -415,15 +424,17 @@ public class StudentController {
 		String course;
 		
 		do{
-			course = InputDialog.showStringInputDialog(
+			course = showStringInputDialog(
 						UPDATE_STUDENT_DATA, 
 						COURSE, 
-						InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+						createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
 					);
 				
-		}while(course == null && !MessageDialog.showConfirmationDialog(
-				UPDATE_STUDENT_DATA, 
-				YOUR_CHANGES_WILL_BE_DISCARDED_ARE_YOU_SURE_YOU_WANT_TO_CANCEL
+		}while(
+				course == null && 
+				!showConfirmationDialog(
+					UPDATE_STUDENT_DATA, 
+					YOUR_CHANGES_WILL_BE_DISCARDED_ARE_YOU_SURE_YOU_WANT_TO_CANCEL
 				)
 		);
 		if(course == null)
@@ -432,7 +443,7 @@ public class StudentController {
 		student.setCourse(course);
 		student.setName(name);
 		
-		if(MessageDialog.showConfirmationDialog(
+		if(showConfirmationDialog(
 				UPDATE_STUDENT_DATA,
 				RECORD_UPDATED_SUCCESSFULLY + "\n" + UPDATE_GRADES + "?"
 		)) {
@@ -442,10 +453,10 @@ public class StudentController {
 	
 	private void updateStudentGrades(Student student) {
 		do {
-			var disciplineName = InputDialog.showStringInputDialog(
+			var disciplineName = showStringInputDialog(
 					UPDATE_STUDENT_DATA, 
 					DISCIPLINE_NAME, 
-					InputDialog.createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
+					createEmptyStringValidator(NAME_CANNOT_BE_BLANK)
 				);
 			
 			var grade = InputDialog.showDoubleInputDialog(UPDATE_GRADES, GRADE, gradeRangeValidator);
@@ -455,11 +466,11 @@ public class StudentController {
 				d.setGrade(grade);
 				
 				if(student.updateGrade(d)) {
-					MessageDialog.showInformationDialog(UPDATE_GRADES, RECORD_UPDATED_SUCCESSFULLY);
+					showInformationDialog(UPDATE_GRADES, RECORD_UPDATED_SUCCESSFULLY);
 				}else {
-					MessageDialog.showAlertDialog(UPDATE_GRADES, STUDENT_NOT_ENROLLED_IN_THIS_DISCIPLINE);
+					showAlertDialog(UPDATE_GRADES, STUDENT_NOT_ENROLLED_IN_THIS_DISCIPLINE);
 				}
 			}
-		}while(MessageDialog.showConfirmationDialog(UPDATE_STUDENT_DATA, UPDATE_ANOTHER_GRADE));
+		}while(showConfirmationDialog(UPDATE_STUDENT_DATA, UPDATE_ANOTHER_GRADE));
 	}
 }

@@ -1,13 +1,6 @@
 package tsi.too.grade_control.controller;
 
-import static tsi.too.grade_control.Constants.DELETE_STUDENT;
-import static tsi.too.grade_control.Constants.EXIT;
-import static tsi.too.grade_control.Constants.GRADES_CONTROLLER;
-import static tsi.too.grade_control.Constants.REGISTER_STUDENT;
-import static tsi.too.grade_control.Constants.REPORT;
-import static tsi.too.grade_control.Constants.SEARCH_STUDENT;
-import static tsi.too.grade_control.Constants.SEARCH_DISCIPLINE;
-import static tsi.too.grade_control.Constants.UPDATE_STUDENT_DATA;
+import static tsi.too.grade_control.Constants.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
