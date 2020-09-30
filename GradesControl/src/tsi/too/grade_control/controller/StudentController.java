@@ -139,6 +139,11 @@ public class StudentController {
 		return s.isEnrolled() ? s : null;
 	}
 
+	/** 
+	 * Reads and adds the disciplines to the student until he reaches the maximum allowed or the user stops reading. 
+	 * 
+	 * @param student the student to be enrolled.
+	 */
 	private void enroll(Student student) {
 		while(student.canEnrollInAnotherDiscipline()) {
 			var discipline = readDisciplineData(student);
@@ -153,7 +158,13 @@ public class StudentController {
 		}
 	}
 	
-	private Pair<String, Double> readDisciplineData(Student s) {
+	/**
+	 * Reads a discipline info validating if student is already enrolled.
+	 * 
+	 * @param student the target student.
+	 * @return the read discipline as an <code>Pair<String, Double></code>
+	 */
+	private Pair<String, Double> readDisciplineData(Student student) {
 		String name = showStringInputDialog(
 				DISCIPLINE_ENROLLMENT, 
 				NAME, 
@@ -162,7 +173,7 @@ public class StudentController {
 							.getErrorMessage(input);
 					
 					if(message == DEFAULT_SUCCESS_MESSAGE) {
-						return s.isEnrolled(input) 
+						return student.isEnrolled(input) 
 								? STUDENT_ALREADY_ENROLLED_IN_THIS_DISCIPLINE : DEFAULT_SUCCESS_MESSAGE;
 					}
 					
@@ -183,6 +194,13 @@ public class StudentController {
 		return new Pair<String, Double>(name, grade);
 	}
 
+	/**
+	 * Searches for a student based on their name.
+	 * 
+	 * @param students where to search.
+	 * @param name the target name.
+	 * @return the found student or null.
+	 */
 	private Student searchStudent(final List<Student> students, String name) {
 		var found = students.stream()
 				.filter(s-> s.getName().equalsIgnoreCase(name))
@@ -194,6 +212,11 @@ public class StudentController {
 		return null;
 	}
 	
+	/**
+	 * Searches for a student and displays his information in a dialog box.
+	 * 
+	 * @param students where to search.
+	 */
 	public void searchStudent(final List<Student> students) {
 		if(isClassEmpty())
 		{
@@ -218,6 +241,11 @@ public class StudentController {
 		}
 	}
 	
+	/**
+	 * Reads a student name and remove it if found.   
+	 * 
+	 * @param students where to look/remove.
+	 */
 	public void removeStudent(final ArrayList<Student> students) {
 		if(isClassEmpty())
 		{
@@ -250,6 +278,11 @@ public class StudentController {
 		}
 	}
 
+	/**
+	 * Searches and displays the discipline info for a student based on user input.  
+	 * 
+	 * @param students the data source.
+	 */
 	public void searchDiscipline(final List<Student> students) {
 		if(isClassEmpty())
 		{
@@ -302,6 +335,13 @@ public class StudentController {
 		showInformationDialog(SEARCH_STUDENT, message);
 	}
 
+	/**
+	 * Searches a discipline based on the student's registration number
+	 * 
+	 * @param students where to search.
+	 * @param registration 
+	 * @return the student found or null if not found.
+	 */
 	private Student searchDiscipline(final List<Student> students, String registration) {
 		var found = students.stream()
 				.filter(s-> s.getRegistration().equalsIgnoreCase(registration))
@@ -313,10 +353,23 @@ public class StudentController {
 		return null;
 	}
 	
+	/**
+	 * Searches a grade for an student in a specific discipline.
+	 * 
+	 * @param student the target student.
+	 * @param discipline the target discipline.
+	 * @return the grade if student is enrolled in that discipline or null if not enrolled.
+	 */
 	private Float searchDiscipline(Student student, String discipline) {
 		return student.getGrade(discipline);
 	}
 
+	/**
+	 * Prepares a general report containing the list of approved and failed students, the count of failed and
+	 * approved students and their percentages
+	 *
+	 * @param students the data source.
+	 */
 	public void report(final List<Student> students) {
 		if(isClassEmpty()) {
 			showInformationDialog(REPORT, NO_DATA_FOUND);
@@ -352,6 +405,12 @@ public class StudentController {
 		showTextMessage(REPORT, message.toString());
 	}
 
+	/**
+	 * Generates a message containing the student's basic information and approval status.
+	 * 
+	 * @param student the target student.
+	 * @return the generated message.
+	 */
 	private String generateStudentApprovalStatus(Student student) {
 		if(student == null)
 			return "";
@@ -364,6 +423,12 @@ public class StudentController {
 				.toString();
 	}
 
+	/**
+	 * Generates a default header with separators chars.
+	 * 
+	 * @param header the header title.
+	 * @return the generated string.
+	 */
 	private String generateSeparator(String header) {
 		final int charCount = 20;
 		var separatorChars="";
@@ -375,6 +440,13 @@ public class StudentController {
 		return String.format("\n%s %s %s", separatorChars, header, separatorChars);
 	}
 	
+	/**
+	 * Calculates the equivalent percentage of one value over another.
+	 * 
+	 * @param value the partial value.
+	 * @param from the total value.
+	 * @return the equivalent percentage.
+	 */
 	private double calculatePercentage(double value, double from) {
 		return value / from * 100;
 	}

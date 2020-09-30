@@ -42,6 +42,10 @@ public class MenuController {
 		}
 	}
 
+	/**
+	 * Displays an options menu
+	 * 
+	 */
 	public void showMenu() {
 		InputDialog.showMenuDialog(
 				GRADES_CONTROLLER, 

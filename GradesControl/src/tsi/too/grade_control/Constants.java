@@ -19,7 +19,7 @@ public interface Constants {
 	String REGISTRATION_NUMBER_CANOT_BE_BLANK = "Matrícula não pode ficar em branco";
 	String INVALID_REGISTRATION_NUMBER = "Matrícula inválida";
 	String REGISTRATION_ALREADY_REGISTERED = "Matrícula ja registrada";
-	String NAME_ALREADY_REGISTERED = "Nome ja registrado";
+	String NAME_ALREADY_REGISTERED = "Nome já registrado";
 	String NAME = "Nome";
 	String NAME_CANNOT_BE_BLANK = "Nome não pode ser vazio";
 	String COURSE = "Curso";
