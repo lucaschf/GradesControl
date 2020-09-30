@@ -3,6 +3,7 @@ package tsi.too.grade_control;
 import java.util.ArrayList;
 
 import tsi.too.grade_control.controller.MenuController;
+import tsi.too.grade_control.model.Student;
 
 public class GradesControl {
 	private ArrayList<Student> students;

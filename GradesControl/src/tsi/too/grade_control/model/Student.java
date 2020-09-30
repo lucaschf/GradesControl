@@ -1,4 +1,6 @@
-package tsi.too.grade_control;
+package tsi.too.grade_control.model;
+
+import static tsi.too.grade_control.Constants.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,7 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Student implements Cloneable{
+
+public class Student {
 	private final int MAX_SUBSCRIPTION_ALLWOED = 5;
 	private static int studentsCount = 0;
 
@@ -57,11 +60,11 @@ public class Student implements Cloneable{
 			studentsCount--;
 	}
 	
-	public boolean addSubject(Discipline subject) {
+	public boolean addDiscipline(String disciplineName, double grade) {
 		if(enrolledDisciplinesCount >= MAX_SUBSCRIPTION_ALLWOED - 1)
 			return false;
 
-		enrolledDisciplines[enrolledDisciplinesCount] = subject;
+		enrolledDisciplines[enrolledDisciplinesCount] = new Discipline(disciplineName, grade);
 		enrolledDisciplinesCount++;
 		
 		return true;
@@ -96,32 +99,64 @@ public class Student implements Cloneable{
 		return false;
 	}
 	
-	public List<Discipline> getEnrolledDisciplines(){
+	private List<Discipline> getEnrolledDisciplines(){
 		var l = new ArrayList<Discipline>(Arrays.asList(enrolledDisciplines));
 		l.removeAll(Collections.singleton(null));
 		
 		return l;
 	}
 
-	public List<Discipline> getDisciplines(String name){
+	private List<Discipline> getDisciplines(String name){
 		return getEnrolledDisciplines()
 				.stream().filter(s-> s.getName().equalsIgnoreCase(name))
 				.collect(Collectors.toList());	
 	}
 	
-	public boolean updateGrade(Discipline discipline) {
+	public Float getGrade(final String discipline) {
+		var disciplinesFound = getDisciplines(discipline);
+		
+		if(disciplinesFound.isEmpty())
+			return null;
+		
+		return (float) disciplinesFound.get(0).getGrade();
+	}
+	
+	public boolean updateGrade(String disciplineName, double grade ) {
 		for(Discipline d : enrolledDisciplines) {
 			if(d == null)
 				return false;
 			
-			if(discipline.getName().equalsIgnoreCase(d.getName()))
+			if(disciplineName.equalsIgnoreCase(d.getName()))
 			{
-				d.setGrade(discipline.getGrade());
+				d.setGrade(grade);
 				return true;
 			}
 		}
 		
 		return false;
+	}
+	
+	public String toReportString() {
+		var message = new StringBuilder()
+				.append(String.format("%s: %s", REGISTRATION_NUMBER, getRegistration()))
+				.append(String.format("\n%s: %s", NAME, getName()))
+				.append(String.format("\n%s: %s", COURSE, getCourse()))
+				.append(String.format("\n\n%s:", DISCIPLINES))
+				;
+		
+		if(enrolledDisciplinesCount == 0)
+			message.append(String.format("\n%s", NO_DATA_FOUND));
+		else {
+			for(Discipline s: enrolledDisciplines) {
+				if(s == null)
+					break;
+				
+				message = message.append(String.format("\n\t%s: %s",NAME, s.getName()))
+					.append(String.format("\n\t%s: %1.2f\n", GRADE, s.getGrade()));
+			}
+		}
+		
+		return message.toString();
 	}
 	
 	@Override
@@ -132,5 +167,39 @@ public class Student implements Cloneable{
 				", subjects= " + getEnrolledDisciplines() + 
 				", registeredSubjects= " + enrolledDisciplinesCount 
 				+ "}";
+	}
+	
+	private class Discipline {
+		private final double MIN_FOR_APPROVAL = 6;
+		
+		private String name;
+		private double grade;
+		
+		private Discipline(final String name, final double grade) {
+			super();
+			this.name = name;
+			this.grade = grade;
+		}
+
+		public String getName() {
+			return name;
+		}
+		
+		public double getGrade() {
+			return grade;
+		}
+		
+		public void setGrade(double grade) {
+			this.grade = grade;
+		}
+		
+		public boolean isAproved() {
+			return grade >= MIN_FOR_APPROVAL;
+		}
+		
+		@Override
+		public String toString() {
+			return "name= " + name + ", grade= " + grade + "";
+		}
 	}
 }

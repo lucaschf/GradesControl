@@ -14,20 +14,23 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import tsi.too.grade_control.Student;
-import tsi.too.grade_control.Discipline;
+import tsi.too.grade_control.model.Student;
+import tsi.too.grade_control.util.Pair;
 import tsi.too.message_dialog.InputDialog;
 import tsi.too.message_dialog.InputDialog.InputValidator;
+import tsi.too.message_dialog.MessageDialog;
 
 public class StudentController {
-
+	public static final double MAX_GRADE = 10;
+	public static final double MIN_GRADE = 0;
+	
 	private static StudentController instance;
 
 	private StudentController() {}
 
 	private final InputValidator<Double> gradeRangeValidator = InputDialog.createRangeValidator(
-			Discipline.MIN_GRADE, 
-			Discipline.MAX_GRADE,
+			MIN_GRADE, 
+			MAX_GRADE,
 			GRADE_MUST_BE_BETWEEN_ZERO_AND_TEN 
 	);
 	
@@ -138,11 +141,11 @@ public class StudentController {
 
 	private void enroll(Student s) {
 		while(s.canEnrollInAnotherDiscipline()) {
-			var subject = readDisciplineData(s);
-			if(subject == null)
+			var discipline = readDisciplineData(s);
+			if(discipline == null)
 				break;
 			
-			s.addSubject(subject);
+			s.addDiscipline(discipline.getFirst(), discipline.getSecond());
 			
 			if(s.canEnrollInAnotherDiscipline() && 
 					!showConfirmationDialog(STUDENT_REGISTRATION, ENROLL_IN_ANOTHER_DISCIPLINE))
@@ -150,7 +153,7 @@ public class StudentController {
 		}
 	}
 	
-	private Discipline readDisciplineData(Student s) {
+	private Pair<String, Double> readDisciplineData(Student s) {
 		String name = showStringInputDialog(
 				DISCIPLINE_ENROLLMENT, 
 				NAME, 
@@ -177,7 +180,7 @@ public class StudentController {
 		if(grade == null)
 			return null;
 		
-		return new Discipline(name, grade);
+		return new Pair<String, Double>(name, grade);
 	}
 
 	private Student searchStudent(final List<Student> students, String name) {
@@ -192,6 +195,12 @@ public class StudentController {
 	}
 	
 	public void searchStudent(final List<Student> students) {
+		if(isClassEmpty())
+		{
+			MessageDialog.showAlertDialog(SEARCH_STUDENT, NO_STUDENTS_REGISTERED);
+			return;
+		}
+		
 		var name = showStringInputDialog(
 				SEARCH_STUDENT, 
 				NAME, 
@@ -205,30 +214,17 @@ public class StudentController {
 			if(student == null)
 				showAlertDialog(SEARCH_STUDENT, STUDENT_NOT_FOUND);
 			else
-				showTextMessage(STUDENT_DATA, createStudentMessage(student));
+				showTextMessage(STUDENT_DATA, student.toReportString());
 		}
-	}
-
-	private String createStudentMessage(final Student student) {
-		var message = new StringBuilder()
-				.append(String.format("%s: %s", REGISTRATION_NUMBER, student.getRegistration()))
-				.append(String.format("\n%s: %s", NAME, student.getName()))
-				.append(String.format("\n%s: %s", COURSE, student.getCourse()))
-				.append(String.format("\n\n%s:", DISCIPLINES))
-				;
-		
-		for(Discipline s: student.getEnrolledDisciplines()) {
-			if(s == null)
-				break;
-			
-			message = message.append(String.format("\n\t%s: %s",NAME, s.getName()))
-				.append(String.format("\n\t%s: %1.2f\n", GRADE, s.getGrade()));
-		}
-	
-		return message.toString();
 	}
 	
 	public void removeStudent(final ArrayList<Student> students) {
+		if(isClassEmpty())
+		{
+			MessageDialog.showAlertDialog(DELETE_STUDENT, NO_STUDENTS_REGISTERED);
+			return;
+		}
+		
 		var name = showStringInputDialog(
 				SEARCH_STUDENT, 
 				NAME, 
@@ -243,7 +239,7 @@ public class StudentController {
 		if(student == null)
 			showAlertDialog(SEARCH_STUDENT, STUDENT_NOT_FOUND);
 		else {
-			var message = createStudentMessage(student) + 
+			var message = student.toReportString() + 
 					String.format("\n%s", ARE_YOU_SURE_YOU_WANT_TO_DELETE_THIS_STUDENT);
 			
 			if(showConfirmationDialog(DELETE_STUDENT, message)){
@@ -255,6 +251,12 @@ public class StudentController {
 	}
 
 	public void searchDiscipline(final List<Student> students) {
+		if(isClassEmpty())
+		{
+			MessageDialog.showAlertDialog(SEARCH_DISCIPLINE, NO_STUDENTS_REGISTERED);
+			return;
+		}
+		
 		var studentNameOrRegistration = showStringInputDialog(
 				SEARCH_DISCIPLINE, 
 				STUDENT_NAME_OR_REGISTRATION, 
@@ -263,12 +265,12 @@ public class StudentController {
 		if(studentNameOrRegistration == null)
 			return;
 		
-		var subject = showStringInputDialog(
+		var discipline = showStringInputDialog(
 				SEARCH_DISCIPLINE, 
 				DISCIPLINE_NAME, 
 				createEmptyStringValidator(THIS_FIELD_CANNOT_BE_EMPTY)
 		);
-		if(subject == null)
+		if(discipline == null)
 			return;
 		
 		var student = searchStudent(students, studentNameOrRegistration);
@@ -283,23 +285,19 @@ public class StudentController {
 			return;
 		}
 		
-		var enrolledDisciplines = searchDiscipline(student, subject);
-		if(enrolledDisciplines.length == 0)
+		var grade = searchDiscipline(student, discipline);
+		if(grade == null)
 		{
 			showAlertDialog(
 					SEARCH_STUDENT, 
-					String.format(THE_STUDENT_IS_NOT_ENROLLED_ON_THIS_SUBJECT, subject)
+					String.format(THE_STUDENT_IS_NOT_ENROLLED_ON_THIS_SUBJECT, discipline)
 			);
 			
 			return;
 		}
 		
-		var message = student.getName();
+		var message = String.format("%s\n\t%s: %1.2f",student.getName(), discipline, grade);
 		
-		for(Object obj : enrolledDisciplines) {
-			var discipline = ((Discipline) obj);
-			message+= String.format("\n\t%s: %1.2f", discipline.getName(), discipline.getGrade());
-		}
 		
 		showInformationDialog(SEARCH_STUDENT, message);
 	}
@@ -315,20 +313,20 @@ public class StudentController {
 		return null;
 	}
 	
-	private Object[] searchDiscipline(Student student, String subject) {
-		return student.getDisciplines(subject).toArray();
+	private Float searchDiscipline(Student student, String discipline) {
+		return student.getGrade(discipline);
 	}
 
 	public void report(final List<Student> students) {
+		if(isClassEmpty()) {
+			showInformationDialog(REPORT, NO_DATA_FOUND);
+			return;
+		}
+		
 		var message = new StringBuilder();
 		var studentsCount = Student.getStudentsCount();
 		var reprovedCount = 0;
 		var approvedCount = 0;
-		
-		if(studentsCount == 0) {
-			showInformationDialog(REPORT, NO_DATA_FOUND);
-			return;
-		}
 		
 		for(Student s : students){
 			message.append(generateStudentApprovalStatus(s))
@@ -392,6 +390,12 @@ public class StudentController {
 	}
 
 	public void updateStudentData(final ArrayList<Student> students) {
+		if(isClassEmpty())
+		{
+			MessageDialog.showAlertDialog(UPDATE_STUDENT_DATA, NO_STUDENTS_REGISTERED);
+			return;
+		}
+		
 		var name = showStringInputDialog(
 				UPDATE_STUDENT_DATA, 
 				STUDENT_NAME, 
@@ -461,16 +465,17 @@ public class StudentController {
 			
 			var grade = InputDialog.showDoubleInputDialog(UPDATE_GRADES, GRADE, gradeRangeValidator);
 			
-			if(grade != null) {
-				var d = new Discipline(disciplineName, grade);
-				d.setGrade(grade);
-				
-				if(student.updateGrade(d)) {
+			if(grade != null) {	
+				if(student.updateGrade(disciplineName, grade)) {
 					showInformationDialog(UPDATE_GRADES, RECORD_UPDATED_SUCCESSFULLY);
 				}else {
 					showAlertDialog(UPDATE_GRADES, STUDENT_NOT_ENROLLED_IN_THIS_DISCIPLINE);
 				}
 			}
 		}while(showConfirmationDialog(UPDATE_STUDENT_DATA, UPDATE_ANOTHER_GRADE));
+	}
+
+	private boolean isClassEmpty() {
+		return Student.getStudentsCount() == 0;
 	}
 }

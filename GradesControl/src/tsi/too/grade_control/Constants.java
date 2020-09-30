@@ -4,6 +4,7 @@ public interface Constants {
 	String GRADES_CONTROLLER = "Controle de notas";
 	String REGISTER_STUDENT = "Cadastrar aluno";
 	String SEARCH_STUDENT = "Pesquisar aluno";
+	String NO_STUDENTS_REGISTERED = "Não há alunos registrados";
 	String SEARCH_DISCIPLINE = "Pesquisar disciplina";
 	String UPDATE_STUDENT_DATA = "Alterar dados do aluno";
 	String UPDATE_ANOTHER_GRADE = "Alterar outra nota?";

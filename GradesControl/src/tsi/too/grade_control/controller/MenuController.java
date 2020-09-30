@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import tsi.too.grade_control.Student;
+import tsi.too.grade_control.model.Student;
 import tsi.too.message_dialog.InputDialog;
 
 public class MenuController {
