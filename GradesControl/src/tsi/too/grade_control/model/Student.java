@@ -71,12 +71,8 @@ public class Student {
 	}
 
 	public boolean isAproved() {
-		for(int i = 0; i < enrolledDisciplinesCount; i++){
-			if(!enrolledDisciplines[i].isAproved())
-				return false;
-		}
-
-		return true;
+		return getEnrolledDisciplines().stream()
+				.filter(d -> d!= null && !d.isAproved()).count() == 0;
 	}
 	
 	public boolean canEnrollInAnotherDiscipline() {
@@ -87,16 +83,9 @@ public class Student {
 		return enrolledDisciplinesCount > 0;
 	}
 
-	public boolean isEnrolled(String subjectName) {
-		if(enrolledDisciplinesCount == 0)
-			return false;
-		
-		for(int i = 0; i < enrolledDisciplinesCount; i++) {
-			if(enrolledDisciplines[i].getName().equalsIgnoreCase(subjectName))
-				return true;
-		}
-		
-		return false;
+	public boolean isEnrolled(String discipline) {
+		return getEnrolledDisciplines().stream()
+				.filter(d -> d != null && d.getName().equalsIgnoreCase(discipline)).count() > 0;
 	}
 	
 	private List<Discipline> getEnrolledDisciplines(){
@@ -113,27 +102,21 @@ public class Student {
 	}
 	
 	public Float getGrade(final String discipline) {
-		var disciplinesFound = getDisciplines(discipline);
+		var disciplinesFound = getDisciplines(discipline).stream().mapToDouble(Discipline::getGrade).findFirst();
 		
-		if(disciplinesFound.isEmpty())
-			return null;
-		
-		return (float) disciplinesFound.get(0).getGrade();
+		return disciplinesFound == null || disciplinesFound.isEmpty() ? null : (float)disciplinesFound.getAsDouble();
 	}
 	
 	public boolean updateGrade(String disciplineName, double grade ) {
-		for(Discipline d : enrolledDisciplines) {
-			if(d == null)
-				return false;
-			
-			if(disciplineName.equalsIgnoreCase(d.getName()))
-			{
-				d.setGrade(grade);
-				return true;
-			}
-		}
+		var discipline = getEnrolledDisciplines().stream()
+				.filter(d -> d!= null && d.getName().equalsIgnoreCase(disciplineName))
+				.collect(Collectors.toList());
 		
-		return false;
+		if(discipline.isEmpty())
+			return false;
+		
+		discipline.get(0).setGrade(grade);
+		return true;	
 	}
 	
 	public String toReportString() {
@@ -164,8 +147,7 @@ public class Student {
 		return "Student {registration= " + registration +
 				", course= " + course + 
 				", name= " + name + 
-				", subjects= " + getEnrolledDisciplines() + 
-				", registeredSubjects= " + enrolledDisciplinesCount 
+				", disciplines= " + getEnrolledDisciplines() 
 				+ "}";
 	}
 	

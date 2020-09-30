@@ -139,15 +139,15 @@ public class StudentController {
 		return s.isEnrolled() ? s : null;
 	}
 
-	private void enroll(Student s) {
-		while(s.canEnrollInAnotherDiscipline()) {
-			var discipline = readDisciplineData(s);
+	private void enroll(Student student) {
+		while(student.canEnrollInAnotherDiscipline()) {
+			var discipline = readDisciplineData(student);
 			if(discipline == null)
 				break;
 			
-			s.addDiscipline(discipline.getFirst(), discipline.getSecond());
+			student.addDiscipline(discipline.getFirst(), discipline.getSecond());
 			
-			if(s.canEnrollInAnotherDiscipline() && 
+			if(student.canEnrollInAnotherDiscipline() && 
 					!showConfirmationDialog(STUDENT_REGISTRATION, ENROLL_IN_ANOTHER_DISCIPLINE))
 				break;
 		}
@@ -290,7 +290,7 @@ public class StudentController {
 		{
 			showAlertDialog(
 					SEARCH_STUDENT, 
-					String.format(THE_STUDENT_IS_NOT_ENROLLED_ON_THIS_SUBJECT, discipline)
+					String.format(THE_STUDENT_IS_NOT_ENROLLED_ON_THIS_SUBJECT, studentNameOrRegistration)
 			);
 			
 			return;
@@ -365,16 +365,14 @@ public class StudentController {
 	}
 
 	private String generateSeparator(String header) {
-		var charCount = 20;
+		final int charCount = 20;
 		var separatorChars="";
 		
 		for(int i = 0; i < charCount; i++) {
 			separatorChars+="-";
 		}
 		
-		var message = "\n" + separatorChars +" " + header + " " + separatorChars;
-		
-		return message;
+		return String.format("\n%s %s %s", separatorChars, header, separatorChars);
 	}
 	
 	private double calculatePercentage(double value, double from) {
