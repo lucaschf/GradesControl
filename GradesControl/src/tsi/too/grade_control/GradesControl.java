@@ -6,7 +6,10 @@ import tsi.too.grade_control.controller.MenuController;
 import tsi.too.grade_control.model.Student;
 
 public class GradesControl {
-	private ArrayList<Student> students;
+	/* We can remove this here and define it as an instance variable of the StudentController class.
+	 * I left it here because it is requested in the statement of the problem.
+	 */
+	private ArrayList<Student> students; 
 	private MenuController controller;
 	
 	public GradesControl() {

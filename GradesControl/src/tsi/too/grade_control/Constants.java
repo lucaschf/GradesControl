@@ -17,6 +17,8 @@ public interface Constants {
 	String EXIT = "Sair";
 	String REGISTRATION_NUMBER = "Matrícula";
 	String REGISTRATION_NUMBER_CANOT_BE_BLANK = "Matrícula não pode ficar em branco";
+	String INVALID_COURSE_INITIALS = "Sigla do curso inválida.";
+	String COURSE_INITIALS = "Sigla do curso";
 	String INVALID_REGISTRATION_NUMBER = "Matrícula inválida";
 	String REGISTRATION_ALREADY_REGISTERED = "Matrícula ja registrada";
 	String NAME_ALREADY_REGISTERED = "Nome já registrado";

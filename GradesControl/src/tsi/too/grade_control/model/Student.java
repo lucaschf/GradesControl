@@ -1,7 +1,5 @@
 package tsi.too.grade_control.model;
 
-import static tsi.too.grade_control.Constants.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,11 +53,6 @@ public class Student {
 		studentsCount++;
 	}
 	
-	public static void decreaseStudentsCount() {
-		if(studentsCount > 0)
-			studentsCount--;
-	}
-	
 	public boolean addDiscipline(String disciplineName, double grade) {
 		if(enrolledDisciplinesCount >= MAX_SUBSCRIPTION_ALLWOED - 1)
 			return false;
@@ -72,7 +65,8 @@ public class Student {
 
 	/**
 	 * The student will be considered approved if his grades in the <code>MAX_SUBSCRIPTION_ALLWOED</code>
-	 *  subjects are equal to or higher than <code>Discipline.MIN_FOR_APPROVAL</code>.
+	 * subjects are equal to or higher than <code>Discipline.MIN_FOR_APPROVAL</code>.
+	 *  
 	 * @return the approval status
 	 */
 	public boolean isAproved() {
@@ -105,19 +99,26 @@ public class Student {
 	 */
 	public boolean isEnrolled(String discipline) {
 		return getEnrolledDisciplines().stream()
-				.filter(d -> d != null && d.getName().equalsIgnoreCase(discipline)).count() > 0;
+				.filter(d -> d != null && d.getName().equalsIgnoreCase(discipline))
+				.count() > 0;
 	}
 	
 	/**
+	 * Recovers all registered disciplines, cloning them without breaking the composition
+	 * 
 	 * @return all enrolled disciplines as a list.
 	 */
-	private List<Discipline> getEnrolledDisciplines(){
-		var l = new ArrayList<Discipline>(Arrays.asList(enrolledDisciplines));
+	public List<Discipline> getEnrolledDisciplines(){
+		return retriveEnrolledDisciplines().stream().map(d -> d.clone()).collect(Collectors.toList());
+	}
+
+	private List<Discipline> retriveEnrolledDisciplines(){
+		var l = new ArrayList<Discipline>(Arrays.asList(enrolledDisciplines));		
 		l.removeAll(Collections.singleton(null));
 		
 		return l;
 	}
-
+	
 	/**
 	 * Gets all enrolled disciplines based on the name of a discipline
 	 * 
@@ -150,7 +151,7 @@ public class Student {
 	 * @return true if success, false otherwise.
 	 */
 	public boolean updateGrade(String disciplineName, double grade ) {
-		var discipline = getEnrolledDisciplines().stream()
+		var discipline = retriveEnrolledDisciplines().stream()
 				.filter(d -> d!= null && d.getName().equalsIgnoreCase(disciplineName))
 				.collect(Collectors.toList());
 		
@@ -158,36 +159,9 @@ public class Student {
 			return false;
 		
 		discipline.get(0).setGrade(grade);
+		
 		return true;	
-	}
-	
-	/**
-	 * Generates an report formated String.
-	 * 
-	 * @return the generated String.
-	 */
-	public String toReportString() {
-		var message = new StringBuilder()
-				.append(String.format("%s: %s", REGISTRATION_NUMBER, getRegistration()))
-				.append(String.format("\n%s: %s", NAME, getName()))
-				.append(String.format("\n%s: %s", COURSE, getCourse()))
-				.append(String.format("\n\n%s:", DISCIPLINES))
-				;
-		
-		if(enrolledDisciplinesCount == 0)
-			message.append(String.format("\n%s", NO_DATA_FOUND));
-		else {
-			for(Discipline s: enrolledDisciplines) {
-				if(s == null)
-					break;
-				
-				message = message.append(String.format("\n\t%s: %s",NAME, s.getName()))
-					.append(String.format("\n\t%s: %1.2f\n", GRADE, s.getGrade()));
-			}
-		}
-		
-		return message.toString();
-	}
+	}	
 	
 	@Override
 	public String toString() {
@@ -196,39 +170,5 @@ public class Student {
 				", name= " + name + 
 				", disciplines= " + getEnrolledDisciplines() 
 				+ "}";
-	}
-	
-	private class Discipline {
-		private final double MIN_FOR_APPROVAL = 6;
-		
-		private String name;
-		private double grade;
-		
-		private Discipline(final String name, final double grade) {
-			super();
-			this.name = name;
-			this.grade = grade;
-		}
-
-		public String getName() {
-			return name;
-		}
-		
-		public double getGrade() {
-			return grade;
-		}
-		
-		public void setGrade(double grade) {
-			this.grade = grade;
-		}
-		
-		public boolean isAproved() {
-			return grade >= MIN_FOR_APPROVAL;
-		}
-		
-		@Override
-		public String toString() {
-			return "name= " + name + ", grade= " + grade + "";
-		}
-	}
+	}	
 }
